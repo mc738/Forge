@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{0741A8B6-2EF2-4E5B-85DA-C7F71FBEE7DA}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Forge.Core", "Forge.Core\Forge.Core.fsproj", "{E22B055B-A5B6-4201-BA03-8424B65DC094}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freql.MySql", "..\Freql\Freql.MySql\Freql.MySql.fsproj", "{1114D35F-0BB9-42D0-8110-D36556A6CDC2}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Freql.Sqlite", "..\Freql\Freql.Sqlite\Freql.Sqlite.fsproj", "{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Faaz", "..\Faaz\Faaz\Faaz.fsproj", "{87AD35CD-FAF6-432D-B1BF-871E6592647C}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Faaz.ToolKit", "..\Faaz\Faaz.ToolKit\Faaz.ToolKit.fsproj", "{92919EE2-257C-47AF-9C4B-D8C49BE355E6}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Scripts", "Scripts\Scripts.fsproj", "{6BCABA80-48D3-4B07-BADE-8DB0E031648E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E22B055B-A5B6-4201-BA03-8424B65DC094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E22B055B-A5B6-4201-BA03-8424B65DC094}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E22B055B-A5B6-4201-BA03-8424B65DC094}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E22B055B-A5B6-4201-BA03-8424B65DC094}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1114D35F-0BB9-42D0-8110-D36556A6CDC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1114D35F-0BB9-42D0-8110-D36556A6CDC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1114D35F-0BB9-42D0-8110-D36556A6CDC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1114D35F-0BB9-42D0-8110-D36556A6CDC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87AD35CD-FAF6-432D-B1BF-871E6592647C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87AD35CD-FAF6-432D-B1BF-871E6592647C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87AD35CD-FAF6-432D-B1BF-871E6592647C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87AD35CD-FAF6-432D-B1BF-871E6592647C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92919EE2-257C-47AF-9C4B-D8C49BE355E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92919EE2-257C-47AF-9C4B-D8C49BE355E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92919EE2-257C-47AF-9C4B-D8C49BE355E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92919EE2-257C-47AF-9C4B-D8C49BE355E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BCABA80-48D3-4B07-BADE-8DB0E031648E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BCABA80-48D3-4B07-BADE-8DB0E031648E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BCABA80-48D3-4B07-BADE-8DB0E031648E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BCABA80-48D3-4B07-BADE-8DB0E031648E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1114D35F-0BB9-42D0-8110-D36556A6CDC2} = {0741A8B6-2EF2-4E5B-85DA-C7F71FBEE7DA}
+		{E0F09B55-ED18-4A75-8F79-BEABD4AE0C58} = {0741A8B6-2EF2-4E5B-85DA-C7F71FBEE7DA}
+		{87AD35CD-FAF6-432D-B1BF-871E6592647C} = {0741A8B6-2EF2-4E5B-85DA-C7F71FBEE7DA}
+		{92919EE2-257C-47AF-9C4B-D8C49BE355E6} = {0741A8B6-2EF2-4E5B-85DA-C7F71FBEE7DA}
+	EndGlobalSection
+EndGlobal
