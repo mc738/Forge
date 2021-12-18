@@ -1,6 +1,7 @@
 ﻿namespace Forge.Core
 
 open System
+open System.IO
 open Faaz
 open Faaz.ScriptHost
 open Faaz.ToolKit.Dev
@@ -20,11 +21,12 @@ module Agents =
             | Major
             | Minor
             | Revision
+            | Specific of int * int * int
 
         [<RequireQualifiedAccess>]
         type BuildAgentCommand = Build of string * BuildType
 
-        let startBuildAgent (hostContext: HostContext) (context: MySqlContext) (scriptPath: string) =
+        let startBuildAgent (hostContext: HostContext) (context: MySqlContext) (scriptsPath: string) =
             MailboxProcessor<BuildAgentCommand>.Start
                 (fun inbox ->
                     let rec loop () =
@@ -53,22 +55,25 @@ module Agents =
 
                                     printfn "*** Fetching latest build details."
                                     let (major, minor, revision) =
-                                        match context.SelectSingleAnon<BuildRecord>(latestBuildSql, [ project.Id ]) with
-                                        | Some build ->
-                                            match buildType with
-                                            | BuildType.Major -> build.Major + 1, 0, 0
-                                            | BuildType.Minor -> build.Major, build.Minor + 1, 0
-                                            | BuildType.Revision -> build.Major, build.Minor, build.Revision + 1
-                                        | None -> 0, 1, 0
+                                        match buildType, context.SelectSingleAnon<BuildRecord>(latestBuildSql, [ project.Id ]) with
+                                        //| Some build ->
+                                        //match buildType with
+                                        | BuildType.Specific (maj, min, rev), _ -> maj, min, rev 
+                                        | BuildType.Major, Some build -> build.Major + 1, 0, 0
+                                        | BuildType.Minor, Some build -> build.Major, build.Minor + 1, 0
+                                        | BuildType.Revision, Some build -> build.Major, build.Minor, build.Revision + 1
+                                        | _, None -> 0, 1, 0
 
                                     let command =
                                         $"BuildScripts.{project.Name}.run {major} {minor} {revision}"
 
-                                    match hostContext.Eval<string>(scriptPath, command) with
-                                    | Ok path ->
+                                    let scriptPath = Path.Combine(scriptsPath, $"{project.ScriptName}.fsx")
+                                    printfn $"Running script `{scriptPath}`."
+                                    match hostContext.EvalWithContext(scriptPath,  command) with
+                                    | Ok buildCtx ->
 
                                         // Connect to the context.db and retrieve data.
-                                        let buildCtx = SqliteContext.Open(path)
+                                        //let buildCtx = SqliteContext.Open(path)
                                         
                                         let bs = buildCtx.SelectSingle<BuildPipeline.Stats>("build_stats")
                                         let buildLog = buildCtx.Select<Common.LogEntry>("build_logs")
@@ -76,7 +81,7 @@ module Agents =
                                         printfn "*** Saving build."
                                         let buildId =
                                             ({
-                                                ProjectId = 1
+                                                ProjectId = project.Id
                                                 Reference = Guid.NewGuid()
                                                 Name = bs.Name
                                                 CommitHash = bs.LatestCommitHash
@@ -103,10 +108,10 @@ module Agents =
                                             IsWarning = li.IsWarning
                                         }: Operations.AddBuildLogItemParameters))
                                         |> fun l -> context.InsertList(BuildLogItemRecord.TableName(), l)
-                                        
+                                        printfn "Build complete!"
                                         
                                         ()
-                                    | Error e -> ()
+                                    | Error e -> printfn $"Error: {e}"
                                 | None -> printfn "Project not found."
 
                             return! loop ()
@@ -125,3 +130,4 @@ module Agents =
         member ba.StartMinor(name) = agent.Post(BuildAgentCommand.Build (name, BuildType.Minor))
         member ba.StartRevision(name) = agent.Post(BuildAgentCommand.Build (name, BuildType.Revision))
         
+        member ba.StartSpecific(name, major, minor, revision) = agent.Post(BuildAgentCommand.Build (name, BuildType.Specific (major, minor, revision)))

@@ -5,7 +5,7 @@ open System.Text.Json.Serialization
 open Freql.Core.Common
 open Freql.MySql
 
-/// Module generated on 18/12/2021 01:15:04 (utc) via Freql.Sqlite.Tools.
+/// Module generated on 18/12/2021 12:12:46 (utc) via Freql.Sqlite.Tools.
 module Records =
     type BuildLogItemRecord =
         { [<JsonPropertyName("id")>] Id: int
@@ -34,7 +34,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `build_logs_FK` (`build_id`),
   CONSTRAINT `build_logs_FK` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -98,7 +98,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `builds_FK` (`project_id`),
   CONSTRAINT `builds_FK` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -127,7 +127,8 @@ module Records =
           [<JsonPropertyName("name")>] Name: string
           [<JsonPropertyName("nameSlug")>] NameSlug: string
           [<JsonPropertyName("url")>] Url: string
-          [<JsonPropertyName("sourceUrl")>] SourceUrl: string }
+          [<JsonPropertyName("sourceUrl")>] SourceUrl: string
+          [<JsonPropertyName("scriptName")>] ScriptName: string }
     
         static member Blank() =
             { Id = 0
@@ -135,7 +136,8 @@ module Records =
               Name = String.Empty
               NameSlug = String.Empty
               Url = String.Empty
-              SourceUrl = String.Empty }
+              SourceUrl = String.Empty
+              ScriptName = String.Empty }
     
         static member CreateTableSql() = """
         CREATE TABLE `projects` (
@@ -145,6 +147,7 @@ module Records =
   `name_slug` varchar(100) NOT NULL,
   `url` varchar(255) NOT NULL,
   `source_url` varchar(255) NOT NULL,
+  `script_name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `projects_UN` (`reference`),
   UNIQUE KEY `projects_UN_1` (`name`)
@@ -158,7 +161,8 @@ module Records =
               name,
               name_slug,
               url,
-              source_url
+              source_url,
+              script_name
         FROM projects
         """
     
@@ -218,14 +222,16 @@ module Operations =
           [<JsonPropertyName("name")>] Name: string
           [<JsonPropertyName("nameSlug")>] NameSlug: string
           [<JsonPropertyName("url")>] Url: string
-          [<JsonPropertyName("sourceUrl")>] SourceUrl: string }
+          [<JsonPropertyName("sourceUrl")>] SourceUrl: string
+          [<JsonPropertyName("scriptName")>] ScriptName: string }
     
         static member Blank() =
             { Reference = Guid.NewGuid()
               Name = String.Empty
               NameSlug = String.Empty
               Url = String.Empty
-              SourceUrl = String.Empty }
+              SourceUrl = String.Empty
+              ScriptName = String.Empty }
     
     let insertProject (context: MySqlContext) (parameters: AddProjectParameters) =
         context.Insert("projects", parameters)
