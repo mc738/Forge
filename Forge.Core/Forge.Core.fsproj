@@ -6,7 +6,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Library.fs"/>
+        <Compile Include="Library.fs" />
+        <Compile Include="Persistence.fs" />
+        <Compile Include="Agents.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Faaz\Faaz.ToolKit\Faaz.ToolKit.fsproj" />
+      <ProjectReference Include="..\..\Faaz\Faaz\Faaz.fsproj" />
+      <ProjectReference Include="..\..\Freql\Freql.MySql\Freql.MySql.fsproj" />
+      <ProjectReference Include="..\..\Freql\Freql.Sqlite\Freql.Sqlite.fsproj" />
+      <ProjectReference Include="..\..\ToolBox\ToolBox\ToolBox.fsproj" />
     </ItemGroup>
 
 </Project>
