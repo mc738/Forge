@@ -6,17 +6,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Library.fs" />
+        <Compile Include="Actions\S3.fs" />
+        <Compile Include="Actions\DotNet.fs" />
+        <Compile Include="Actions\Git.fs" />
         <Compile Include="Persistence.fs" />
+        <Compile Include="BuildPipelines.fs" />
         <Compile Include="Agents.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Faaz\Faaz.ToolKit\Faaz.ToolKit.fsproj" />
-      <ProjectReference Include="..\..\Faaz\Faaz\Faaz.fsproj" />
-      <ProjectReference Include="..\..\Freql\Freql.MySql\Freql.MySql.fsproj" />
-      <ProjectReference Include="..\..\Freql\Freql.Sqlite\Freql.Sqlite.fsproj" />
-      <ProjectReference Include="..\..\ToolBox\ToolBox\ToolBox.fsproj" />
+      <PackageReference Include="Faaz" Version="0.1.0" />
+      <PackageReference Include="Freql.MySql" Version="0.4.1" />
+      <PackageReference Include="Freql.Sqlite" Version="0.4.1" />
+      <PackageReference Include="FStore" Version="0.1.0" />
+      <PackageReference Include="ToolBox" Version="0.1.0" />
     </ItemGroup>
 
 </Project>

@@ -17,13 +17,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Peeps\Peeps.Monitoring\Peeps.Monitoring.fsproj" />
-      <ProjectReference Include="..\..\Peeps\Peeps\Peeps.fsproj" />
       <ProjectReference Include="..\Forge.Core\Forge.Core.fsproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Giraffe" Version="5.0.0" />
+      <PackageReference Include="Peeps" Version="0.4.5" />
+      <PackageReference Include="Peeps.Monitoring" Version="0.4.5" />
     </ItemGroup>
 
 </Project>
