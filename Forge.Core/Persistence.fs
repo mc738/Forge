@@ -5,9 +5,11 @@ open System.Text.Json.Serialization
 open Freql.Core.Common
 open Freql.MySql
 
-/// Module generated on 18/12/2021 12:12:46 (utc) via Freql.Sqlite.Tools.
+/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Sqlite.Tools.
+[<RequireQualifiedAccess>]
 module Records =
-    type BuildLogItemRecord =
+    /// A record representing a row in the table `build_logs`.
+    type BuildLogItem =
         { [<JsonPropertyName("id")>] Id: int
           [<JsonPropertyName("buildId")>] BuildId: int
           [<JsonPropertyName("step")>] Step: string
@@ -34,7 +36,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `build_logs_FK` (`build_id`),
   CONSTRAINT `build_logs_FK` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=327 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -50,7 +52,8 @@ module Records =
     
         static member TableName() = "build_logs"
     
-    type BuildRecord =
+    /// A record representing a row in the table `builds`.
+    type Build =
         { [<JsonPropertyName("id")>] Id: int
           [<JsonPropertyName("projectId")>] ProjectId: int
           [<JsonPropertyName("reference")>] Reference: Guid
@@ -98,7 +101,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `builds_FK` (`project_id`),
   CONSTRAINT `builds_FK` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -121,7 +124,8 @@ module Records =
     
         static member TableName() = "builds"
     
-    type ProjectRecord =
+    /// A record representing a row in the table `projects`.
+    type Project =
         { [<JsonPropertyName("id")>] Id: int
           [<JsonPropertyName("reference")>] Reference: Guid
           [<JsonPropertyName("name")>] Name: string
@@ -151,7 +155,7 @@ module Records =
   PRIMARY KEY (`id`),
   UNIQUE KEY `projects_UN` (`reference`),
   UNIQUE KEY `projects_UN_1` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -168,8 +172,12 @@ module Records =
     
         static member TableName() = "projects"
     
-module Operations =
-    type AddBuildLogItemParameters =
+
+/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Tools.
+[<RequireQualifiedAccess>]
+module Parameters =
+    /// A record representing a new row in the table `build_logs`.
+    type NewBuildLogItem =
         { [<JsonPropertyName("buildId")>] BuildId: int
           [<JsonPropertyName("step")>] Step: string
           [<JsonPropertyName("entry")>] Entry: string
@@ -183,10 +191,9 @@ module Operations =
               IsError = false
               IsWarning = false }
     
-    let insertBuildLogItem (context: MySqlContext) (parameters: AddBuildLogItemParameters) =
-        context.Insert("build_logs", parameters)
     
-    type AddBuildParameters =
+    /// A record representing a new row in the table `builds`.
+    type NewBuild =
         { [<JsonPropertyName("projectId")>] ProjectId: int
           [<JsonPropertyName("reference")>] Reference: Guid
           [<JsonPropertyName("name")>] Name: string
@@ -214,10 +221,9 @@ module Operations =
               Signature = String.Empty
               Successful = false }
     
-    let insertBuild (context: MySqlContext) (parameters: AddBuildParameters) =
-        context.Insert("builds", parameters)
     
-    type AddProjectParameters =
+    /// A record representing a new row in the table `projects`.
+    type NewProject =
         { [<JsonPropertyName("reference")>] Reference: Guid
           [<JsonPropertyName("name")>] Name: string
           [<JsonPropertyName("nameSlug")>] NameSlug: string
@@ -233,6 +239,82 @@ module Operations =
               SourceUrl = String.Empty
               ScriptName = String.Empty }
     
-    let insertProject (context: MySqlContext) (parameters: AddProjectParameters) =
+    
+/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Tools.
+[<RequireQualifiedAccess>]
+module Operations =
+
+    let buildSql (lines: string list) = lines |> String.concat Environment.NewLine
+
+    /// Select a `Records.BuildLogItem` from the table `build_logs`.
+    /// Internally this calls `context.SelectSingleAnon<Records.BuildLogItem>` and uses Records.BuildLogItem.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectBuildLogItemRecord ctx "WHERE `field` = @0" [ box `value` ]
+    let selectBuildLogItemRecord (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.BuildLogItem.SelectSql() ] @ query |> buildSql
+        context.SelectSingleAnon<Records.BuildLogItem>(sql, parameters)
+    
+    /// Internally this calls `context.SelectAnon<Records.BuildLogItem>` and uses Records.BuildLogItem.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectBuildLogItemRecords ctx "WHERE `field` = @0" [ box `value` ]
+    let selectBuildLogItemRecords (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.BuildLogItem.SelectSql() ] @ query |> buildSql
+        context.SelectAnon<Records.BuildLogItem>(sql, parameters)
+    
+    let insertBuildLogItem (context: MySqlContext) (parameters: Parameters.NewBuildLogItem) =
+        context.Insert("build_logs", parameters)
+    
+    /// Select a `Records.Build` from the table `builds`.
+    /// Internally this calls `context.SelectSingleAnon<Records.Build>` and uses Records.Build.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectBuildRecord ctx "WHERE `field` = @0" [ box `value` ]
+    let selectBuildRecord (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Build.SelectSql() ] @ query |> buildSql
+        context.SelectSingleAnon<Records.Build>(sql, parameters)
+    
+    /// Internally this calls `context.SelectAnon<Records.Build>` and uses Records.Build.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectBuildRecords ctx "WHERE `field` = @0" [ box `value` ]
+    let selectBuildRecords (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Build.SelectSql() ] @ query |> buildSql
+        context.SelectAnon<Records.Build>(sql, parameters)
+    
+    let insertBuild (context: MySqlContext) (parameters: Parameters.NewBuild) =
+        context.Insert("builds", parameters)
+    
+    /// Select a `Records.Project` from the table `projects`.
+    /// Internally this calls `context.SelectSingleAnon<Records.Project>` and uses Records.Project.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectProjectRecord ctx "WHERE `field` = @0" [ box `value` ]
+    let selectProjectRecord (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Project.SelectSql() ] @ query |> buildSql
+        context.SelectSingleAnon<Records.Project>(sql, parameters)
+    
+    /// Internally this calls `context.SelectAnon<Records.Project>` and uses Records.Project.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectProjectRecords ctx "WHERE `field` = @0" [ box `value` ]
+    let selectProjectRecords (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Project.SelectSql() ] @ query |> buildSql
+        context.SelectAnon<Records.Project>(sql, parameters)
+    
+    let insertProject (context: MySqlContext) (parameters: Parameters.NewProject) =
         context.Insert("projects", parameters)
     

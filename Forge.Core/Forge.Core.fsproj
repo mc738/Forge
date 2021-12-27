@@ -15,14 +15,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Freql.MySql" Version="0.4.1" />
-      <PackageReference Include="Freql.Sqlite" Version="0.4.1" />
+      <PackageReference Include="Faaz" Version="0.1.1" />
+      <PackageReference Include="Freql.MySql" Version="0.4.2" />
+      <PackageReference Include="Freql.Sqlite" Version="0.4.2" />
       <PackageReference Include="FStore" Version="0.1.0" />
       <PackageReference Include="ToolBox" Version="0.1.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\..\Faaz\Faaz\Faaz.fsproj" />
     </ItemGroup>
 
 </Project>

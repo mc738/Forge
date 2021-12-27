@@ -6,10 +6,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Scripts", "Scripts\Scripts.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Forge.WebApi", "Forge.WebApi\Forge.WebApi.fsproj", "{30AB1629-E4AC-49ED-804A-331EB173C9C6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{72B85C7E-5190-4B9E-B4EF-D220403FD1E3}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Faaz", "..\Faaz\Faaz\Faaz.fsproj", "{B41F3714-77B7-4FDB-A788-B8446A6A3061}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,12 +24,7 @@ Global
 		{30AB1629-E4AC-49ED-804A-331EB173C9C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30AB1629-E4AC-49ED-804A-331EB173C9C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30AB1629-E4AC-49ED-804A-331EB173C9C6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B41F3714-77B7-4FDB-A788-B8446A6A3061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B41F3714-77B7-4FDB-A788-B8446A6A3061}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B41F3714-77B7-4FDB-A788-B8446A6A3061}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B41F3714-77B7-4FDB-A788-B8446A6A3061}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B41F3714-77B7-4FDB-A788-B8446A6A3061} = {72B85C7E-5190-4B9E-B4EF-D220403FD1E3}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@ open System.IO
 open Faaz
 open Faaz.ScriptHost
 open Forge.Core.Persistence
-open Forge.Core.Persistence.Records
+open Forge.Core.Persistence
 open Freql.MySql
 open Freql.Sqlite
 
@@ -36,17 +36,17 @@ module Agents =
                             | BuildAgentCommand.Build (name, buildType) ->
 
                                 let getProjectSql =
-                                    [ ProjectRecord.SelectSql()
+                                    [ Records.Project.SelectSql()
                                       "WHERE name = @0;" ]
                                     |> String.concat Environment.NewLine
 
                                 printfn "*** Fetching project"
-                                match context.SelectSingleAnon<ProjectRecord>(getProjectSql, [ name ]) with
+                                match context.SelectSingleAnon<Records.Project>(getProjectSql, [ name ]) with
                                 | Some project ->
 
                                     // Get the latest build.
                                     let latestBuildSql =
-                                        [ BuildRecord.SelectSql()
+                                        [ Records.Build.SelectSql()
                                           "WHERE project_id = @0"
                                           "ORDER BY major DESC, minor DESC, revision DESC"
                                           "LIMIT 1" ]
@@ -54,7 +54,7 @@ module Agents =
 
                                     printfn "*** Fetching latest build details."
                                     let (major, minor, revision) =
-                                        match buildType, context.SelectSingleAnon<BuildRecord>(latestBuildSql, [ project.Id ]) with
+                                        match buildType, context.SelectSingleAnon<Records.Build>(latestBuildSql, [ project.Id ]) with
                                         //| Some build ->
                                         //match buildType with
                                         | BuildType.Specific (maj, min, rev), _ -> maj, min, rev 
@@ -92,8 +92,8 @@ module Agents =
                                                 BuiltBy = bs.BuiltBy
                                                 Signature = bs.Signature
                                                 Successful = true
-                                            }: Operations.AddBuildParameters)
-                                            |> fun b -> context.Insert(BuildRecord.TableName(), b)
+                                            }: Parameters.NewBuild)
+                                            |> fun b -> context.Insert(Records.Build.TableName(), b)
                                             |> int
                                         
                                         printfn "*** Saving build log."    
@@ -105,8 +105,8 @@ module Agents =
                                             Entry = li.Entry
                                             IsError = li.IsError
                                             IsWarning = li.IsWarning
-                                        }: Operations.AddBuildLogItemParameters))
-                                        |> fun l -> context.InsertList(BuildLogItemRecord.TableName(), l)
+                                        }: Parameters.NewBuildLogItem))
+                                        |> fun l -> context.InsertList(Records.BuildLogItem.TableName(), l)
                                         printfn "Build complete!"
                                         
                                         ()
