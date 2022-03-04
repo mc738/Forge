@@ -45,3 +45,25 @@ module Git =
             | true -> errors |> String.concat Environment.NewLine |> Ok
             | false -> Error "Tag not added"
         | false -> Error "Tag not added"
+
+    let getAllCommits (gitPath: string) (path) =
+        let output, errors =
+            Process.execute gitPath $"log --oneline" (path |> Some)
+        match errors.IsEmpty with
+        | true -> Ok output
+        | false -> Error errors
+    
+    let getChangedAllFiles (gitPath: string) (commitHash: string) path =
+        let output, errors =
+            Process.execute gitPath $"diff --name-only -r {commitHash}" (path |> Some)
+        match errors.IsEmpty with
+        | true -> Ok output
+        | false -> Error errors
+        
+    let getChangedFiles (gitPath: string) (commitHash: string) path =
+        let output, errors =
+            Process.execute gitPath $"diff --name-only -r {commitHash} {commitHash}~1" (path |> Some)
+        match errors.IsEmpty with
+        | true -> Ok output
+        | false -> Error errors
+        

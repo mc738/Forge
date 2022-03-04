@@ -5,7 +5,7 @@ open System.Text.Json.Serialization
 open Freql.Core.Common
 open Freql.MySql
 
-/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Sqlite.Tools.
+/// Module generated on 04/03/2022 20:02:30 (utc) via Freql.Sqlite.Tools.
 [<RequireQualifiedAccess>]
 module Records =
     /// A record representing a row in the table `build_logs`.
@@ -36,7 +36,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `build_logs_FK` (`build_id`),
   CONSTRAINT `build_logs_FK` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=327 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=373 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -101,7 +101,7 @@ module Records =
   PRIMARY KEY (`id`),
   KEY `builds_FK` (`project_id`),
   CONSTRAINT `builds_FK` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     
         static member SelectSql() = """
@@ -123,6 +123,94 @@ module Records =
         """
     
         static member TableName() = "builds"
+    
+    /// A record representing a row in the table `deployment_location`.
+    type DeploymentLocation =
+        { [<JsonPropertyName("id")>] Id: int
+          [<JsonPropertyName("name")>] Name: string }
+    
+        static member Blank() =
+            { Id = 0
+              Name = String.Empty }
+    
+        static member CreateTableSql() = """
+        CREATE TABLE `deployment_location` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
+        """
+    
+        static member SelectSql() = """
+        SELECT
+              id,
+              name
+        FROM deployment_location
+        """
+    
+        static member TableName() = "deployment_location"
+    
+    /// A record representing a row in the table `deployments`.
+    type Deployments =
+        { [<JsonPropertyName("id")>] Id: int
+          [<JsonPropertyName("buildId")>] BuildId: int
+          [<JsonPropertyName("locationId")>] LocationId: int
+          [<JsonPropertyName("artifactBucket")>] ArtifactBucket: string
+          [<JsonPropertyName("artifactKey")>] ArtifactKey: string
+          [<JsonPropertyName("createdOn")>] CreatedOn: DateTime
+          [<JsonPropertyName("completedOn")>] CompletedOn: DateTime option
+          [<JsonPropertyName("complete")>] Complete: byte
+          [<JsonPropertyName("hadErrors")>] HadErrors: byte option
+          [<JsonPropertyName("hadWarnings")>] HadWarnings: byte option }
+    
+        static member Blank() =
+            { Id = 0
+              BuildId = 0
+              LocationId = 0
+              ArtifactBucket = String.Empty
+              ArtifactKey = String.Empty
+              CreatedOn = DateTime.UtcNow
+              CompletedOn = None
+              Complete = 0uy
+              HadErrors = None
+              HadWarnings = None }
+    
+        static member CreateTableSql() = """
+        CREATE TABLE `deployments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `build_id` int NOT NULL,
+  `location_id` int NOT NULL,
+  `artifact_bucket` text NOT NULL,
+  `artifact_key` text NOT NULL,
+  `created_on` datetime NOT NULL,
+  `completed_on` datetime DEFAULT NULL,
+  `complete` tinyint(1) NOT NULL,
+  `had_errors` tinyint(1) DEFAULT NULL,
+  `had_warnings` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `deployments_FK` (`build_id`),
+  KEY `deployments_FK_1` (`location_id`),
+  CONSTRAINT `deployments_FK` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`),
+  CONSTRAINT `deployments_FK_1` FOREIGN KEY (`location_id`) REFERENCES `deployment_location` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3
+        """
+    
+        static member SelectSql() = """
+        SELECT
+              id,
+              build_id,
+              location_id,
+              artifact_bucket,
+              artifact_key,
+              created_on,
+              completed_on,
+              complete,
+              had_errors,
+              had_warnings
+        FROM deployments
+        """
+    
+        static member TableName() = "deployments"
     
     /// A record representing a row in the table `projects`.
     type Project =
@@ -173,7 +261,7 @@ module Records =
         static member TableName() = "projects"
     
 
-/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Tools.
+/// Module generated on 04/03/2022 20:02:30 (utc) via Freql.Tools.
 [<RequireQualifiedAccess>]
 module Parameters =
     /// A record representing a new row in the table `build_logs`.
@@ -222,6 +310,38 @@ module Parameters =
               Successful = false }
     
     
+    /// A record representing a new row in the table `deployment_location`.
+    type NewDeploymentLocation =
+        { [<JsonPropertyName("name")>] Name: string }
+    
+        static member Blank() =
+            { Name = String.Empty }
+    
+    
+    /// A record representing a new row in the table `deployments`.
+    type NewDeployments =
+        { [<JsonPropertyName("buildId")>] BuildId: int
+          [<JsonPropertyName("locationId")>] LocationId: int
+          [<JsonPropertyName("artifactBucket")>] ArtifactBucket: string
+          [<JsonPropertyName("artifactKey")>] ArtifactKey: string
+          [<JsonPropertyName("createdOn")>] CreatedOn: DateTime
+          [<JsonPropertyName("completedOn")>] CompletedOn: DateTime option
+          [<JsonPropertyName("complete")>] Complete: byte
+          [<JsonPropertyName("hadErrors")>] HadErrors: byte option
+          [<JsonPropertyName("hadWarnings")>] HadWarnings: byte option }
+    
+        static member Blank() =
+            { BuildId = 0
+              LocationId = 0
+              ArtifactBucket = String.Empty
+              ArtifactKey = String.Empty
+              CreatedOn = DateTime.UtcNow
+              CompletedOn = None
+              Complete = 0uy
+              HadErrors = None
+              HadWarnings = None }
+    
+    
     /// A record representing a new row in the table `projects`.
     type NewProject =
         { [<JsonPropertyName("reference")>] Reference: Guid
@@ -240,7 +360,7 @@ module Parameters =
               ScriptName = String.Empty }
     
     
-/// Module generated on 19/12/2021 21:33:51 (utc) via Freql.Tools.
+/// Module generated on 04/03/2022 20:02:30 (utc) via Freql.Tools.
 [<RequireQualifiedAccess>]
 module Operations =
 
@@ -293,6 +413,54 @@ module Operations =
     
     let insertBuild (context: MySqlContext) (parameters: Parameters.NewBuild) =
         context.Insert("builds", parameters)
+    
+    /// Select a `Records.DeploymentLocation` from the table `deployment_location`.
+    /// Internally this calls `context.SelectSingleAnon<Records.DeploymentLocation>` and uses Records.DeploymentLocation.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectDeploymentLocationRecord ctx "WHERE `field` = @0" [ box `value` ]
+    let selectDeploymentLocationRecord (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.DeploymentLocation.SelectSql() ] @ query |> buildSql
+        context.SelectSingleAnon<Records.DeploymentLocation>(sql, parameters)
+    
+    /// Internally this calls `context.SelectAnon<Records.DeploymentLocation>` and uses Records.DeploymentLocation.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectDeploymentLocationRecords ctx "WHERE `field` = @0" [ box `value` ]
+    let selectDeploymentLocationRecords (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.DeploymentLocation.SelectSql() ] @ query |> buildSql
+        context.SelectAnon<Records.DeploymentLocation>(sql, parameters)
+    
+    let insertDeploymentLocation (context: MySqlContext) (parameters: Parameters.NewDeploymentLocation) =
+        context.Insert("deployment_location", parameters)
+    
+    /// Select a `Records.Deployments` from the table `deployments`.
+    /// Internally this calls `context.SelectSingleAnon<Records.Deployments>` and uses Records.Deployments.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectDeploymentsRecord ctx "WHERE `field` = @0" [ box `value` ]
+    let selectDeploymentsRecord (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Deployments.SelectSql() ] @ query |> buildSql
+        context.SelectSingleAnon<Records.Deployments>(sql, parameters)
+    
+    /// Internally this calls `context.SelectAnon<Records.Deployments>` and uses Records.Deployments.SelectSql().
+    /// The caller can provide extra string lines to create a query and boxed parameters.
+    /// It is up to the caller to verify the sql and parameters are correct,
+    /// this should be considered an internal function (not exposed in public APIs).
+    /// Parameters are assigned names based on their order in 0 indexed array. For example: @0,@1,@2...
+    /// Example: selectDeploymentsRecords ctx "WHERE `field` = @0" [ box `value` ]
+    let selectDeploymentsRecords (context: MySqlContext) (query: string list) (parameters: obj list) =
+        let sql = [ Records.Deployments.SelectSql() ] @ query |> buildSql
+        context.SelectAnon<Records.Deployments>(sql, parameters)
+    
+    let insertDeployments (context: MySqlContext) (parameters: Parameters.NewDeployments) =
+        context.Insert("deployments", parameters)
     
     /// Select a `Records.Project` from the table `projects`.
     /// Internally this calls `context.SelectSingleAnon<Records.Project>` and uses Records.Project.SelectSql().

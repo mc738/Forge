@@ -132,10 +132,7 @@ module Actions =
                                     route "/services/admin/details"
                                     >=> warbler (fun _ -> getServiceDetails) ]*) ]
 
-
-
 module App =
-    
     
     let routes: (HttpFunc -> HttpContext -> HttpFuncResult) =
         let routes =
@@ -145,4 +142,3 @@ module App =
             ]
 
         choose routes
-

@@ -63,8 +63,9 @@ module Agents =
                                         | BuildType.Revision, Some build -> build.Major, build.Minor, build.Revision + 1
                                         | _, None -> 0, 1, 0
 
+                                    // TODO make this config.
                                     let command =
-                                        $"BuildScripts.{project.Name}.run {major} {minor} {revision}"
+                                        $"{project.ScriptName}.{project.Name}.run {major} {minor} {revision}"
 
                                     let scriptPath = Path.Combine(scriptsPath, $"{project.ScriptName}.fsx")
                                     printfn $"Running script `{scriptPath}`."
