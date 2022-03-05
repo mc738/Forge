@@ -4,6 +4,7 @@ open System
 open System.IO
 open Faaz
 open Faaz.ScriptHost
+open Fipc.Core.Common
 open Forge.Core.Persistence
 open Forge.Core.Persistence
 open Freql.MySql
@@ -26,6 +27,33 @@ module Agents =
         type BuildAgentCommand = Build of string * BuildType
 
         let startBuildAgent (hostContext: HostContext) (context: MySqlContext) (scriptsPath: string) =
+            
+            let pipeName = "build_logs"
+            
+            (*
+            let listener (reader: FipcConnectionReader) =
+                let rec testLoop () =
+                    match reader.TryReadMessage() with
+                    | Some msg ->
+                        match msg.Body with
+                        | FipcMessageContent.Text t -> printfn $"Message: {t}"
+                        | _ -> printfn $"Message type not supported yet."
+                    | None -> () //printfn $"No messages."
+
+                    Async.Sleep 1000 |> Async.RunSynchronously
+                    testLoop ()
+
+                printfn $"Starting example listener loop."
+                testLoop ()
+                ()
+            
+            printfn $"*** Starting build logs listener"
+            
+            let reader = Messaging.createServer "server" pipeName 
+            async { return listener reader }
+            |> Async.Start
+            *)
+
             MailboxProcessor<BuildAgentCommand>.Start
                 (fun inbox ->
                     let rec loop () =
@@ -65,7 +93,7 @@ module Agents =
 
                                     // TODO make this config.
                                     let command =
-                                        $"{project.ScriptName}.{project.Name}.run {major} {minor} {revision}"
+                                        $"{project.ScriptName}.{project.Name}.run \"{pipeName}\" {major} {minor} {revision}"
 
                                     let scriptPath = Path.Combine(scriptsPath, $"{project.ScriptName}.fsx")
                                     printfn $"Running script `{scriptPath}`."

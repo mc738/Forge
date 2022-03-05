@@ -32,9 +32,11 @@ module Utils =
         )
 
     let startService (name: string) =
+        
+        
         Processes.Process.run (
-            { Name = ""
-              Args = ""
+            { Name = "/bin/bash"
+              Args = $"-c \"sudo systemctl start {name}.service\""
               StartDirectory = None }: Processes.Process.ProcessParameters
         )
 

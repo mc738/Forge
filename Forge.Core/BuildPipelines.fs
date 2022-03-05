@@ -5,7 +5,6 @@ open System.IO
 open System.Text.Json.Serialization
 open FStore.S3
 open Faaz
-open Faaz.Utils
 open Forge.Core.Actions
 [<RequireQualifiedAccess>]
 module BuildPipeline =
@@ -145,7 +144,7 @@ module BuildPipeline =
           "package-dir", packageDir
           "document-dir", documentationDir ]
 
-    let createContext (config: Configuration) (id: Guid) basePath paths =
+    let createContext (config: Configuration) (id: Guid) basePath paths (pipeName) =
         let args =
             config.Args |> List.map (fun a -> a.Key, a.Value)
 
@@ -154,7 +153,7 @@ module BuildPipeline =
 
         let initStatements = [ Stats.TableSql() ]
 
-        ScriptContext.Create(id, config.Name, basePath, data, initStatements)
+        ScriptContext.Create(id, config.Name, basePath, data, initStatements, pipeName)
 
     let cloneProject (config: Configuration) (srcPath: string) =
         Git.clone config.GitPath config.SourceUrl srcPath
@@ -184,7 +183,7 @@ module BuildPipeline =
             |> Ok
         | Error e -> Error e
 
-    let initialize (config: Configuration) (version: Version) : Result<Context, string> =
+    let initialize (config: Configuration) (version: Version) (pipeName: string) : Result<Context, string> =
         let id = Guid.NewGuid()
 
         printfn "Initializing build context."
@@ -197,7 +196,7 @@ module BuildPipeline =
 
         let paths = initializeDirectory config basePath
 
-        match createContext config id basePath paths with
+        match createContext config id basePath paths pipeName with
         | Ok sc ->
             sc.Log("init", "Initialized scripted context.")
             let srcDir = getSrcDirectory sc
@@ -358,7 +357,7 @@ module BuildPipeline =
         let targetPath = tmpPath bc.Script
         let zipPath = Path.Combine(bc.Script.BasePath, $"{bc.Stats.Name}.zip")
         bc.Script.Log("build-pipeline", $"Creating zip `{zipPath}` from `{targetPath}`")
-        match attempt (fun _ -> Compression.zip targetPath zipPath) with
+        match attempt (fun _ -> ToolBox.Core.Compression.zip targetPath zipPath) with
         | Ok _ -> Ok bc
         | Error e ->
             bc.Script.LogWarning("build-pipleline", $"Zip failed. Error: {e}")

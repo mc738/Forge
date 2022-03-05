@@ -2,6 +2,7 @@
 
 open System
 open Faaz
+open ToolBox.Core.Processes
 
 [<RequireQualifiedAccess>]
 module Git =

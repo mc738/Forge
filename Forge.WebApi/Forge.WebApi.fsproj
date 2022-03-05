@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <Compile Include="Routes.fs" />
+        <Compile Include="Middleware.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
 

@@ -5,6 +5,7 @@ open System.Text.Json
 open System.Text.Json.Serialization
 open Faaz
 open Faaz.ScriptHost
+open Fipc.Core.Common
 open Forge.Core.Agents
 open Freql.MySql
 open Microsoft.AspNetCore.Builder
@@ -23,6 +24,7 @@ open Peeps.Store
 open Peeps.Extensions
 open Peeps.Monitoring.Extensions
 open Forge.WebApi.Routes
+open Forge.WebApi.Middleware
 
 [<CLIMutable>]
 type AppConfiguration = {
@@ -49,6 +51,7 @@ let configureApp (app: IApplicationBuilder) =
     app
         .UseForwardedHeaders(forwardingHeaderOptions)
         .UsePeepsMonitor()
+        .UseLiveBuildLogs()
         .UseRouting()
         .UseCors(fun (b: CorsPolicyBuilder) ->
             b
@@ -104,7 +107,6 @@ let configureLogging (peepsCtx: PeepsContext) (logging: ILoggingBuilder) =
     logging.ClearProviders().AddPeeps(peepsCtx)
     |> ignore
 
-
 [<EntryPoint>]
 let main argv =
 
@@ -127,7 +129,34 @@ let main argv =
     
     let peepsCtx =
         PeepsContext.Create(Path.Combine(path, "logs"), "Forge-WebApi", logActions)
+        
+    let pipeName = "build_logs"
+        
+    // Listener
+    let listener (reader: FipcConnectionReader) =
+        let rec testLoop () =
+            match reader.TryReadMessage() with
+            | Some msg ->
+                match msg.Body with
+                | FipcMessageContent.Text t ->
+                    LiveView.logAction t
+                    
+                    //printfn $"Message: {t}"
+                | _ -> printfn $"Message type not supported yet."
+            | None -> () //printfn $"No messages."
 
+            Async.Sleep 1000 |> Async.RunSynchronously
+            testLoop ()
+
+        printfn $"Starting example listener loop."
+        testLoop ()
+        ()
+    
+    printfn $"*** Starting build logs listener"
+    
+    let reader = Messaging.createServer "server" pipeName 
+    async { return listener reader }
+    |> Async.Start
         
     let context = MySqlContext.Connect(appConfig.ConnectionString)    
     printfn "Starting fsi"

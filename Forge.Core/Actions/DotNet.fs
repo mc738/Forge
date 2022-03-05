@@ -5,6 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Faaz
 open Forge.Core.Actions
+open ToolBox.Core.Processes
 
 [<RequireQualifiedAccess>]
 module DotNet =
@@ -37,6 +38,7 @@ module DotNet =
               createSourcePath name context
               "--configuration Release"
               $"--output {Path.Combine(getPublishPath context, name)}"
+              // TODO - Add type (such as linux-x64) and version etc(?)
               "-p:UseAppHost=false"
               $"/p:VersionPrefix={getVersion context}"
               match getVersionSuffix context with

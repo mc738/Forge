@@ -1,9 +1,16 @@
 ﻿@page "/"
+@using Forge.WebApp.Services
+@inject WebApiService _api
 
-<PageTitle>Index</PageTitle>
+<main>
+    <Button Label="Queue build" Clicked="QueueBuild"></Button>
+    <LiveBuildLogsView></LiveBuildLogsView>
+</main>
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?"/>
+@code {
+    
+    private async Task QueueBuild()
+    {
+        await _api.QueueRevisionBuild("TestRepo");
+    }
+}
