@@ -19,12 +19,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Forge.Core\Forge.Core.fsproj" />
+      <ProjectReference Include="..\Forge.Shared\Forge.Shared.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Giraffe" Version="5.0.0" />
-      <PackageReference Include="Peeps" Version="0.4.5" />
-      <PackageReference Include="Peeps.Monitoring" Version="0.4.5" />
+      <PackageReference Include="Peeps" Version="0.5.0" />
+      <PackageReference Include="Peeps.Monitoring" Version="0.5.0" />
     </ItemGroup>
 
 </Project>

@@ -5,7 +5,9 @@ open System.IO
 open System.Text.Json.Serialization
 open FStore.S3
 open Faaz
+open Forge.Core
 open Forge.Core.Actions
+
 [<RequireQualifiedAccess>]
 module BuildPipeline =
 
@@ -15,14 +17,13 @@ module BuildPipeline =
           Key: string
           [<JsonPropertyName("value")>]
           Value: string }
-    
-    type Push = {
-        [<JsonPropertyName("name")>]
-        Name: string
-        [<JsonPropertyName("source")>]
-        Source: string
-    }
-    
+
+    type Push =
+        { [<JsonPropertyName("name")>]
+          Name: string
+          [<JsonPropertyName("source")>]
+          Source: string }
+
     [<CLIMutable>]
     type Configuration =
         { [<JsonPropertyName("dotnet")>]
@@ -46,58 +47,8 @@ module BuildPipeline =
           [<JsonPropertyName("args")>]
           Args: Arg list }
 
-    type Version =
-        { Major: int
-          Minor: int
-          Revision: int
-          Suffix: string option }
+    type Context = { Script: ScriptContext; Stats: BuildStats }
 
-    type Stats =
-        { Reference: Guid
-          Name: string
-          Major: int
-          Minor: int
-          Revision: int
-          VersionSuffix: string option
-          BuildTime: DateTime
-          BuiltBy: string
-          LatestCommitHash: string
-          Signature: string }
-
-        static member TableSql() =
-            """CREATE TABLE build_stats (
-                    reference TEXT NOT NULL,
-	                name TEXT NOT NULL,
-                    major INTEGER NOT NULL,
-                    minor INTEGER NOT NULL,
-                    revision INTEGER NOT NULL,
-                    version_suffix TEXT,
-                    build_time TEXT NOT NULL,
-                    built_by TEXT NOT NULL,
-                    latest_commit_hash TEXT NOT NULL,
-                    signature TEXT NOT NULL
-                   );"""
-        
-
-        member bs.GetVersion() = $"{bs.Major}.{bs.Minor}.{bs.Revision}"
-
-        member bs.GetVersionWithSuffix() =
-            match bs.VersionSuffix with
-            | Some vs -> $"{bs.Major}.{bs.Minor}.{bs.Revision}-{vs}"
-            | None -> bs.GetVersion()
-
-        member bs.GetLastCommitSlug() = bs.LatestCommitHash.[0..6]
-
-        member bs.GetFullName() =
-            let vs =
-                match bs.VersionSuffix with
-                | Some v -> $"${v}"
-                | None -> ""
-
-            $"{bs.Name}-{bs.GetVersion()}{vs}+{bs.GetLastCommitSlug()}.win-x86"
-
-    type Context = { Script: ScriptContext; Stats: Stats }
-    
     let getTestPath (sc: ScriptContext) = sc.GetValue("tests-dir", "")
     let getPublishPath (sc: ScriptContext) = sc.GetValue("publish-dir", "")
     let getResourcePath (sc: ScriptContext) = sc.GetValue("resource-dir", "")
@@ -107,11 +58,12 @@ module BuildPipeline =
     let getSrcPath (sc: ScriptContext) = sc.GetValue("src-path", "")
 
     let getArtifactsPath (sc: ScriptContext) = sc.GetValue("artifacts-dir", "")
-    
-    let getBuildArtifactName (bc: Context) = Path.Combine(bc.Script.BasePath, $"{bc.Stats.Name}.zip") 
-    
+
+    let getBuildArtifactName (bc: Context) =
+        Path.Combine(bc.Script.BasePath, $"{bc.Stats.Name}.zip")
+
     let tmpPath (sc: ScriptContext) = Path.Combine(sc.BasePath, ".tmp")
-    
+
     let initializeDirectory (config: Configuration) basePath =
         printfn $"Initializing build directory (path: {basePath})."
 
@@ -133,8 +85,10 @@ module BuildPipeline =
         Directory.CreateDirectory(artifactsDir) |> ignore
         Directory.CreateDirectory(srcDir) |> ignore
         Directory.CreateDirectory(packageDir) |> ignore
-        Directory.CreateDirectory(documentationDir) |> ignore
-    
+
+        Directory.CreateDirectory(documentationDir)
+        |> ignore
+
         [ "tests-dir", testingDir
           "publish-dir", publishDir
           "resources-dir", resourcesDir
@@ -151,7 +105,7 @@ module BuildPipeline =
         let data =
             List.concat [ args; paths ] |> Map.ofList
 
-        let initStatements = [ Stats.TableSql() ]
+        let initStatements = [ BuildStats.TableSql() ]
 
         ScriptContext.Create(id, config.Name, basePath, data, initStatements, pipeName)
 
@@ -256,11 +210,11 @@ module BuildPipeline =
     let runPack (config: Configuration) name (sc: ScriptContext) =
         sc.Log("run-pack", $"Packing `{name}`.")
         DotNet.pack sc config.DotNetPath name
-     
+
     let runPush (config: Configuration) name source (sc: ScriptContext) =
         sc.Log("run-push", $"Pushing `{name}` to `{source}`.")
         DotNet.push sc config.DotNetPath name source
-        
+
     let test config (bc: Context) =
         bc.Script.Log("build-pipeline", "Running tests.")
 
@@ -306,7 +260,7 @@ module BuildPipeline =
         | Some e ->
             bc.Script.LogError("build-pipeline", $"Publish error: {e}")
             Error e
-            
+
     let pack config (bc: Context) =
         bc.Script.Log("build-pipeline", "Running pack.")
 
@@ -329,7 +283,7 @@ module BuildPipeline =
         | Some e ->
             bc.Script.LogError("build-pipeline", $"Packing error: {e}")
             Error e
-            
+
     let push config (bc: Context) =
         bc.Script.Log("build-pipeline", "Running pushes.")
 
@@ -352,48 +306,61 @@ module BuildPipeline =
         | Some e ->
             bc.Script.LogError("build-pipeline", $"Pushes error: {e}")
             Error e
-    
+
     let createZip (bc: Context) =
         let targetPath = tmpPath bc.Script
-        let zipPath = Path.Combine(bc.Script.BasePath, $"{bc.Stats.Name}.zip")
+
+        let zipPath =
+            Path.Combine(bc.Script.BasePath, $"{bc.Stats.Name}.zip")
+
         bc.Script.Log("build-pipeline", $"Creating zip `{zipPath}` from `{targetPath}`")
+
         match attempt (fun _ -> ToolBox.Core.Compression.zip targetPath zipPath) with
         | Ok _ -> Ok bc
         | Error e ->
             bc.Script.LogWarning("build-pipleline", $"Zip failed. Error: {e}")
             Ok bc
-          
-    (*  
+
+    (*
     let createBuildArtifact (bc: Context) =
         let artifactPath = tmpPath bc.Script
-        
+
         bc.Script.Log("build-pipeline", $"Creating build artifact from `{artifactPath}`")
         match Artifact.create artifactPath bc.Script.BasePath $"{bc.Stats.Name}.build" with
         | Ok path ->
-            bc.Script.Log("build-pipeline", $"Artifact `{bc.Stats.Name}.build` created.")                    
-            //bc.Script.Log("build-pipeline", $"Cleaning up build. Deleting `{artifactPath}`.")                    
+            bc.Script.Log("build-pipeline", $"Artifact `{bc.Stats.Name}.build` created.")
+            //bc.Script.Log("build-pipeline", $"Cleaning up build. Deleting `{artifactPath}`.")
             //Directory.Delete(artifactPath, true)
             Ok bc
         | Error e -> Error e
     *)
 
     let uploadBuildArtifact (bc: Context) =
-        match bc.Script.TryGetValue("s3-config-path"), bc.Script.TryGetValue("s3-config-bucket")  with
+        match bc.Script.TryGetValue("s3-config-path"), bc.Script.TryGetValue("s3-config-bucket") with
         | Some s3Path, Some bucket ->
             match S3Context.Create(s3Path) with
             | Ok s3 ->
-                bc.Script.Log("build-pipeline", $"S3 context loaded. Uploading to `{s3.Configuration.ServiceUrl}` (Bucket: {bucket})")
-                s3.UploadObject(bucket, bc.Stats.Name, getBuildArtifactName bc) |> Async.RunSynchronously
+                bc.Script.Log(
+                    "build-pipeline",
+                    $"S3 context loaded. Uploading to `{s3.Configuration.ServiceUrl}` (Bucket: {bucket})"
+                )
+
+                s3.UploadObject(bucket, bc.Stats.Name, getBuildArtifactName bc)
+                |> Async.RunSynchronously
+
                 Ok bc
             | Error e ->
                 bc.Script.LogError("build-pipeline", $"Error loading s3 context. Path: {s3Path}")
                 Error e
         | None, _ -> Error "Missing `s3-config-path` value. Try adding as an arg."
         | _, None -> Error "Missing `s3-config-bucket` value. Try adding as an arg."
-    
-    let addTag (config: Configuration) (bc: Context) =                
-        let version = $"v.{bc.Stats.Major}.{bc.Stats.Minor}.{bc.Stats.Revision}"
+
+    let addTag (config: Configuration) (bc: Context) =
+        let version =
+            $"v.{bc.Stats.Major}.{bc.Stats.Minor}.{bc.Stats.Revision}"
+
         bc.Script.Log("build-pipeline", $"Added version tag to git. Tag: {version}")
+
         match Git.addTag config.GitPath (getSrcPath bc.Script) version with
         | Ok m ->
             match Git.pushTag config.GitPath (getSrcPath bc.Script) version with
@@ -406,15 +373,15 @@ module BuildPipeline =
         | Error e ->
             printfn $"error {e}"
             Error e
-        
+
     let cleanUp (bc: Context) =
         match attempt (fun _ -> Directory.Delete(tmpPath bc.Script, true)) with
         | Ok _ -> Ok bc
         | Error e ->
             bc.Script.LogWarning("build-pipleline", $"Clean up failed. Error: {e}")
             Ok bc
-            
+
     /// Finish the pipeline and return the build context path.
     let finish (bc: Context) =
-        Path.Combine(Path.Combine(bc.Script.BasePath, "context.db")) |> Ok
-
+        Path.Combine(Path.Combine(bc.Script.BasePath, "context.db"))
+        |> Ok

@@ -29,30 +29,6 @@ module Agents =
         let startBuildAgent (hostContext: HostContext) (context: MySqlContext) (scriptsPath: string) =
             
             let pipeName = "build_logs"
-            
-            (*
-            let listener (reader: FipcConnectionReader) =
-                let rec testLoop () =
-                    match reader.TryReadMessage() with
-                    | Some msg ->
-                        match msg.Body with
-                        | FipcMessageContent.Text t -> printfn $"Message: {t}"
-                        | _ -> printfn $"Message type not supported yet."
-                    | None -> () //printfn $"No messages."
-
-                    Async.Sleep 1000 |> Async.RunSynchronously
-                    testLoop ()
-
-                printfn $"Starting example listener loop."
-                testLoop ()
-                ()
-            
-            printfn $"*** Starting build logs listener"
-            
-            let reader = Messaging.createServer "server" pipeName 
-            async { return listener reader }
-            |> Async.Start
-            *)
 
             MailboxProcessor<BuildAgentCommand>.Start
                 (fun inbox ->
@@ -62,27 +38,13 @@ module Agents =
 
                             match request with
                             | BuildAgentCommand.Build (name, buildType) ->
-
-                                let getProjectSql =
-                                    [ Records.Project.SelectSql()
-                                      "WHERE name = @0;" ]
-                                    |> String.concat Environment.NewLine
-
                                 printfn "*** Fetching project"
-                                match context.SelectSingleAnon<Records.Project>(getProjectSql, [ name ]) with
+                                match DataStore.getProject context name with
                                 | Some project ->
-
-                                    // Get the latest build.
-                                    let latestBuildSql =
-                                        [ Records.Build.SelectSql()
-                                          "WHERE project_id = @0"
-                                          "ORDER BY major DESC, minor DESC, revision DESC"
-                                          "LIMIT 1" ]
-                                        |> String.concat Environment.NewLine
 
                                     printfn "*** Fetching latest build details."
                                     let (major, minor, revision) =
-                                        match buildType, context.SelectSingleAnon<Records.Build>(latestBuildSql, [ project.Id ]) with
+                                        match buildType, DataStore.getLatestBuild context project.Id with
                                         //| Some build ->
                                         //match buildType with
                                         | BuildType.Specific (maj, min, rev), _ -> maj, min, rev 
@@ -103,39 +65,14 @@ module Agents =
                                         // Connect to the context.db and retrieve data.
                                         //let buildCtx = SqliteContext.Open(path)
                                         
-                                        let bs = buildCtx.SelectSingle<BuildPipeline.Stats>("build_stats")
+                                        let bs = buildCtx.SelectSingle<BuildStats>("build_stats")
                                         let buildLog = buildCtx.Select<Common.LogEntry>("build_logs")
                                         
                                         printfn "*** Saving build."
-                                        let buildId =
-                                            ({
-                                                ProjectId = project.Id
-                                                Reference = Guid.NewGuid()
-                                                Name = bs.Name
-                                                CommitHash = bs.LatestCommitHash
-                                                BuildTime = bs.BuildTime
-                                                Major = bs.Major
-                                                Minor = bs.Minor
-                                                Revision = bs.Revision
-                                                Suffix = bs.VersionSuffix
-                                                BuiltBy = bs.BuiltBy
-                                                Signature = bs.Signature
-                                                Successful = true
-                                            }: Parameters.NewBuild)
-                                            |> fun b -> context.Insert(Records.Build.TableName(), b)
-                                            |> int
+                                        let buildId = DataStore.saveBuild context bs project.Id
                                         
-                                        printfn "*** Saving build log."    
-                                        buildLog
-                                        |> List.map (fun li ->
-                                            ({
-                                            BuildId = buildId
-                                            Step = li.Step
-                                            Entry = li.Entry
-                                            IsError = li.IsError
-                                            IsWarning = li.IsWarning
-                                        }: Parameters.NewBuildLogItem))
-                                        |> fun l -> context.InsertList(Records.BuildLogItem.TableName(), l)
+                                        printfn "*** Saving build log."
+                                        DataStore.saveBuildLog context buildLog buildId
                                         printfn "Build complete!"
                                         
                                         ()

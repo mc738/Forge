@@ -65,7 +65,7 @@ let configureApp (app: IApplicationBuilder) =
         //.UseFAuth(context)
         .UseGiraffe App.routes
 
-let configureServices (logStore: LogStore) (buildAgent: BuildAgent) (*(securityContext: SecurityContext)*) (*(jwt: Tokens.JwtSettings)*) (services: IServiceCollection) =
+let configureServices (logStore: LogStore) (buildAgent: BuildAgent) (config: AppConfiguration) (*(securityContext: SecurityContext)*) (*(jwt: Tokens.JwtSettings)*) (services: IServiceCollection) =
     // TODO add comms support.
     //services.AddHttpClient<CommsClient>() |> ignore
 
@@ -74,6 +74,7 @@ let configureServices (logStore: LogStore) (buildAgent: BuildAgent) (*(securityC
         .AddPeepsMonitorAgent(logStore.Path)
         .AddPeepsRateLimiting(100)
         .AddSingleton<BuildAgent>(fun _ -> buildAgent)
+        .AddScoped<MySqlContext>(fun _ -> MySqlContext.Connect(config.ConnectionString)) 
         //.AddSingleton<Tokens.JwtSettings>(fun _ -> jwt)
         //.AddSingleton<FAuthContext>(context)
         //.AddScoped<MySqlContext>(fun _ -> MySqlContext.Connect(securityContext.ConnectionString))
@@ -132,7 +133,8 @@ let main argv =
         
     let pipeName = "build_logs"
         
-    // Listener
+    // WS Listener
+    // TODO tidy up!
     let listener (reader: FipcConnectionReader) =
         let rec testLoop () =
             match reader.TryReadMessage() with
@@ -173,36 +175,10 @@ let main argv =
                 .UseKestrel()
                 .UseUrls("http://0.0.0.0:11115;https://0.0.0.0:11116;")
                 .Configure(configureApp)
-                .ConfigureServices(configureServices logStore buildAgent)
+                .ConfigureServices(configureServices logStore buildAgent appConfig)
                 .ConfigureLogging(configureLogging peepsCtx)
             |> ignore)
         .Build()
         .Run()
         
     0 // return an integer exit code
-
-
-(*
-open System
-open Faaz
-open Faaz.ScriptHost
-open Faaz.ToolKit.Dev
-open Forge.Core.Agents
-open Freql.MySql
-
-printfn "Starting fsi"
-let fsi = ScriptHost.fsiSession ()
-printfn "Complete."
-
-let hostContext =  ({ FsiSession = fsi } : HostContext)
-
-let context = MySqlContext.Connect("Server=localhost;Database=forge;Uid=max;Pwd=letmein;")
-
-let buildAgent = BuildAgent(hostContext, context, "C:\\Users\\44748\\Projects\\Forge\\Scripts\\BuildScripts.fsx")
-
-buildAgent.StartMinor("TestRepo")
-
-Async.Sleep 100000 |> Async.RunSynchronously
-
-// For more information see https://aka.ms/fsharp-console-apps
-printfn "Hello from F#"*)
