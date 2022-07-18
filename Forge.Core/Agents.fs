@@ -84,7 +84,6 @@ module Agents =
                     printfn "Starting build agent."
                     loop ())
 
-
     open Internal
     
     type BuildAgent(hostContext: HostContext, context: MySqlContext, scriptPath: string) =

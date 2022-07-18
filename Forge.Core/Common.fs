@@ -6,7 +6,6 @@ open System
 [<AutoOpen>]
 module Common =
     
-    
     type Version =
         { Major: int
           Minor: int

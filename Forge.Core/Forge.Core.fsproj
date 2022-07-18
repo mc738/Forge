@@ -22,12 +22,12 @@
       <PackageReference Include="Freql.MySql" Version="0.5.0" />
       <PackageReference Include="Freql.Sqlite" Version="0.5.0" />
       <PackageReference Include="FStore" Version="0.1.0" />
-      <PackageReference Include="ToolBox" Version="0.2.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Faaz\Faaz\Faaz.fsproj" />
       <ProjectReference Include="..\..\Fluff\Fluff.Core\Fluff.Core.fsproj" />
+      <ProjectReference Include="..\..\FXD\FXD\FXD.fsproj" />
       <ProjectReference Include="..\Forge.Shared\Forge.Shared.csproj" />
     </ItemGroup>
 

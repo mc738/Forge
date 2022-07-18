@@ -19,8 +19,4 @@
       <ProjectReference Include="..\Forge.Core\Forge.Core.fsproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="ToolBox" Version="0.2.0" />
-    </ItemGroup>
-
 </Project>

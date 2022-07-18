@@ -41,10 +41,4 @@ module ProjectReports =
                     |> Map.ofList))
         |> fun r -> ({ Values = [ "projects", Mustache.Value.Array r ] |> Map.ofList; Partials = Map.empty }: Mustache.Data)
         |> fun v -> Mustache.parse template |> Mustache.replace v true
-    
-    
-    
-    
-
-
 //()

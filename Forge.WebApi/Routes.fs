@@ -18,7 +18,6 @@ type NewBuild =
     { [<JsonPropertyName("name")>]
       Name: string }
 
-
 [<CLIMutable>]
 type NewSpecific =
     { [<JsonPropertyName("name")>]
@@ -29,7 +28,6 @@ type NewSpecific =
       Minor: int
       [<JsonPropertyName("revision")>]
       Revision: int }
-
 
 [<AutoOpen>]
 module private Utils =

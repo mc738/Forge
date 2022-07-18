@@ -5,6 +5,7 @@ open System.IO
 open System.Text.Json.Serialization
 open FStore.S3
 open Faaz
+open Fipc.Core.Common
 open Forge.Core
 open Forge.Core.Actions
 
@@ -98,7 +99,9 @@ module BuildPipeline =
           "package-dir", packageDir
           "document-dir", documentationDir ]
 
-    let createContext (config: Configuration) (id: Guid) basePath paths (pipeName) =
+    let createLogger pipeName = Messaging.createClient "build_script" pipeName 
+
+    let createContext (config: Configuration) (id: Guid) basePath paths (logger: FipcConnectionWriter) =
         let args =
             config.Args |> List.map (fun a -> a.Key, a.Value)
 
@@ -107,7 +110,7 @@ module BuildPipeline =
 
         let initStatements = [ BuildStats.TableSql() ]
 
-        ScriptContext.Create(id, config.Name, basePath, data, initStatements, pipeName)
+        ScriptContext.Create(id, config.Name, basePath, data, initStatements, logger)
 
     let cloneProject (config: Configuration) (srcPath: string) =
         Git.clone config.GitPath config.SourceUrl srcPath
@@ -137,7 +140,7 @@ module BuildPipeline =
             |> Ok
         | Error e -> Error e
 
-    let initialize (config: Configuration) (version: Version) (pipeName: string) : Result<Context, string> =
+    let initialize (config: Configuration) (version: Version) (logger: FipcConnectionWriter) : Result<Context, string> =
         let id = Guid.NewGuid()
 
         printfn "Initializing build context."
@@ -150,7 +153,7 @@ module BuildPipeline =
 
         let paths = initializeDirectory config basePath
 
-        match createContext config id basePath paths pipeName with
+        match createContext config id basePath paths logger with
         | Ok sc ->
             sc.Log("init", "Initialized scripted context.")
             let srcDir = getSrcDirectory sc
@@ -238,6 +241,16 @@ module BuildPipeline =
             bc.Script.LogError("build-pipeline", $"Tests error: {e}")
             Error e
 
+    let generateDocumentation config (bc: Context) =
+        bc.Script.Log("build-pipeline", "Generating documents")
+        match Documentation.generate bc.Script with
+        | Ok _ ->
+            bc.Script.Log("build-pipeline", "Documents successfully generated.")
+            Ok bc
+        | Error e ->
+            bc.Script.LogError("", "Error generation documents: `{e}`")
+            Error e
+    
     let publish config (bc: Context) =
         bc.Script.Log("build-pipeline", "Running publish.")
 
