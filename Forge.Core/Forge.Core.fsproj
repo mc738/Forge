@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Freql.MySql" Version="0.5.0" />
-      <PackageReference Include="Freql.Sqlite" Version="0.5.0" />
+      <PackageReference Include="Freql.MySql" Version="0.9.1" />
+      <PackageReference Include="Freql.Sqlite" Version="0.9.1" />
       <PackageReference Include="FStore" Version="0.1.0" />
     </ItemGroup>
 

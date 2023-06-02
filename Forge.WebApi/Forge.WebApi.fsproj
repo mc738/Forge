@@ -24,8 +24,8 @@
 
     <ItemGroup>
       <PackageReference Include="Giraffe" Version="5.0.0" />
-      <PackageReference Include="Peeps" Version="0.5.0" />
-      <PackageReference Include="Peeps.Monitoring" Version="0.5.0" />
+      <PackageReference Include="Peeps" Version="0.7.0" />
+      <PackageReference Include="Peeps.Monitoring" Version="0.7.0" />
     </ItemGroup>
 
 </Project>
