@@ -8,6 +8,7 @@ open Faaz.ScriptHost
 open Fipc.Core.Common
 open Forge.Core.Agents
 open Freql.MySql
+open Freql.Sqlite
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Cors.Infrastructure
 open Microsoft.AspNetCore.Diagnostics.HealthChecks
@@ -65,13 +66,14 @@ let configureApp (app: IApplicationBuilder) =
         //.UseFAuth(context)
         .UseGiraffe App.routes
 
-let configureServices (logStore: LogStore) (buildAgent: BuildAgent) (config: AppConfiguration) (*(securityContext: SecurityContext)*) (*(jwt: Tokens.JwtSettings)*) (services: IServiceCollection) =
+let configureServices (logStore: LogStore) (buildAgent: BuildAgent) (monitoringCfg: Monitoring.DataStores.Common.MonitoringStoreConfiguration) (config: AppConfiguration) (*(securityContext: SecurityContext)*) (*(jwt: Tokens.JwtSettings)*) (services: IServiceCollection) =
     // TODO add comms support.
     //services.AddHttpClient<CommsClient>() |> ignore
-
+    //Monitoring.DataStores.Sqlite.Store.config logStore
+    
     services
         .AddPeepsLogStore(logStore)
-        .AddPeepsMonitorAgent(logStore.Path)
+        .AddPeepsMonitorAgent(monitoringCfg)
         .AddPeepsRateLimiting(100)
         .AddSingleton<BuildAgent>(fun _ -> buildAgent)
         .AddScoped<MySqlContext>(fun _ -> MySqlContext.Connect(config.ConnectionString)) 
@@ -125,6 +127,11 @@ let main argv =
         Actions.writeToStore logStore
     ]
     
+    Directory.CreateDirectory(Path.Combine(path, "metrics")) |> ignore
+    
+    let metricsStore = SqliteContext.Create(Path.Combine(path, "metrics", $"Forge-WebApi-metrics-{runId}.db"))
+    let monitoringCfg = Monitoring.DataStores.Sqlite.Store.config metricsStore
+    
     let appConfig = File.ReadAllText (Path.Combine(path, "config.json"))  |> JsonSerializer.Deserialize<AppConfiguration>
     //let jwt = File.ReadAllText (Path.Combine(path, "jwt.json")) |> JsonSerializer.Deserialize<Tokens.JwtSettings>
     
@@ -175,7 +182,7 @@ let main argv =
                 .UseKestrel()
                 .UseUrls("http://0.0.0.0:11115;https://0.0.0.0:11116;")
                 .Configure(configureApp)
-                .ConfigureServices(configureServices logStore buildAgent appConfig)
+                .ConfigureServices(configureServices logStore buildAgent monitoringCfg appConfig)
                 .ConfigureLogging(configureLogging peepsCtx)
             |> ignore)
         .Build()
