@@ -5,7 +5,7 @@ open System.IO
 open System.Text.RegularExpressions
 open Faaz
 open Forge.Core.Actions
-open ToolBox.Core.Processes
+open FsToolbox.Core.Processes
 
 [<RequireQualifiedAccess>]
 module DotNet =

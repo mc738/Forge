@@ -21,7 +21,9 @@
     <ItemGroup>
       <PackageReference Include="Freql.MySql" Version="0.9.1" />
       <PackageReference Include="Freql.Sqlite" Version="0.9.1" />
+      <PackageReference Include="fstoolbox" Version="0.10.0" />
       <PackageReference Include="FStore" Version="0.1.0" />
+      <PackageReference Update="FSharp.Core" Version="8.0.401" />
     </ItemGroup>
 
     <ItemGroup>
